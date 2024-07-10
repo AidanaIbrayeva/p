@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="//cdn.webix.com/components/sidebar/sidebar.js"></script>
+  <link rel="stylesheet" href="//cdn.webix.com/components/sidebar/sidebar.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f4f6f9;
+      color: #333;
+    }
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    .sidebar {
+      background-color: #f8f9fa;
+      border-right: 1px solid #ddd;
+      width: 240px;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    .sidebar header h2 {
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar ul li {
+      margin-bottom: 10px;
+    }
+    .sidebar ul li h3 {
+      margin: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    .sidebar ul li h3 .arrow {
+      margin-left: auto;
+      transition: transform 0.3s;
+    }
+    .sidebar ul li ul {
+      list-style: none;
+      padding-left: 20px;
+      display: none;
+    }
+    .sidebar ul li ul li {
+      margin-bottom: 5px;
+    }
+    .sidebar .logout {
+      position: absolute;
+      bottom: 20px;
+      width: calc(100% - 40px);
+    }
+    .sidebar .logout img {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+    }
+    .sidebar .logout a {
+      color: #333;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+
+    header {
+      background-color: #fff;
+      padding: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .search-profile {
+      display: flex;
+      align-items: center;
+    }
+
+    .search {
+      position: relative;
+      margin-right: 20px;
+    }
+
+    .search input {
+      padding: 8px 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .search button {
+      position: absolute;
+      right: 0;
+      top: 0;
+      height: 100%;
+      background-color: transparent;
+      border: none;
+      color: #666;
+      cursor: pointer;
+    }
+
+    .settings, .profile {
+      margin-right: 20px;
+    }
+
+    .settings a, .profile a {
+      color: #333;
+      text-decoration: none;
+    }
+
+    .settings a i, .profile a i {
+      font-size: 24px;
+    }
+
+    main {
+      flex-grow: 1;
+      padding: 20px;
+      margin-left: 240px;
+    }
+
+    .main-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #007bff;
+    }
+
+    form {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    form label {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    form input,
+    form select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      margin-bottom: 15px;
+    }
+
+    .select-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .select-container select {
+      width: calc(100% - 70px);
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .select-container .edit-button,
+    .select-container .add-button {
+      width: 30px;
+      height: 30px;
+      background-color: #e5eaef;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    .select-container .edit-button {
+      color: #007bff;
+    }
+
+    .select-container .add-button {
+      color: green;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .buttons button {
+      width: 200px;
+      padding: 10px;
+      margin-bottom: 10px;
+      text-align: center;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #save {
+      background-color: #007bff;
+      color: #fff;
+    }
+
+    #delete {
+      background-color: #dc3545;
+      color: #fff;
+    }
+
+    #saveAndAdd, #saveAndEdit {
+      background-color: #17a2b8;
+      color: #fff;
+    }
+
+    #history {
+      background-color: #6c757d;
+      color: #fff;
+    }
+
+    #preview img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <div class="search-profile">
+        <div class="search">
+          <input type="text" id="searchInput" placeholder="Search...">
+          <button><i class="fas fa-search"></i></button>
+        </div>
+        <div class="settings">
+          <a href="/views/setting.ejs"><i class="fas fa-cog"></i></a>
+        </div>
+        <div class="profile">
+          <a href="/views/profile.ejs"><i class="fas fa-user"></i></a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="sidebar">
+      <nav>
+        <header>
+          <h2 onclick="toggleCities()">Города</h2>
+        </header>
+        <ul id="cities-list" style="display: none;">
+          <% cities.forEach(city => { %>
+            <li>
+              <h3 onclick="toggleOrganizations('<%= city.name %>')">
+                <%= city.name %>
+                <i id="<%= city.name %>-arrow" class="arrow fas fa-chevron-right"></i>
+              </h3>
+              <% if (city.organizations && city.organizations.length > 0) { %>
+                <ul id="<%= city.name %>-organizations" style="display: none;">
+                  <% city.organizations.forEach(organization => { %>
+                    <li><%= organization %></li>
+                  <% }) %>
+                </ul>
+              <% } else { %>
+                <p id="<%= city.name %>-organizations" style="display: none;">No organizations found for <%= city.name %>.</p>
+              <% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </nav>
+      <div class="logout">
+        <a href="/logout">
+          <img src="/img/logout.png" alt="Logout">Logout
+        </a>
+      </div>
+    </div>
+
+    <main>
+      <div class="main-content">
+          <h1>Добро Пожаловать!</h1>
+          <form id="employeeForm" enctype="multipart/form-data">
+              <label for="city">Город:</label>
+              <div class="select-container">
+                  <select id="city" name="city">
+                      <% cities.forEach(city => { %>
+                          <option value="<%= city.name %>"><%= city.name %></option>
+                      <% }) %>
+                  </select>
+                  <button class="edit-button" type="button" onclick="editOption('city')">✏️</button>
+                  <button class="add-button" type="button" onclick="addOption('city')">+</button>
+              </div>
+
+              <label for="organization">Организация:</label>
+              <div class="select-container">
+                  <select id="organization" name="organization">
+                      <% cities.forEach(city => { %>
+                          <% city.organizations.forEach(organization => { %>
+                              <option value="<%= organization %>"><%= organization %></option>
+                          <% }) %>
+                      <% }) %>
+                  </select>
+                  <button class="edit-button" type="button" onclick="editOption('organization')">✏️</button>
+                  <button class="add-button" type="button" onclick="addOption('organization')">+</button>
+              </div>
+
+              <label for="department">Отдел:</label>
+              <div class="select-container">
+                  <select id="department" name="department">
+                      <% cities.forEach(city => { %>
+                          <% city.department.forEach(department => { %>
+                              <option value="<%= department %>"><%= department %></option>
+                          <% }) %>
+                      <% }) %>
+                  </select>
+                  <button class="edit-button" type="button" onclick="editOption('department')">✏️</button>
+                  <button class="add-button" type="button" onclick="addOption('department')">+</button>
+              </div>
+
+              <label for="position">Должность:</label>
+              <div class="select-container">
+                  <select id="position" name="position">
+                      <% cities.forEach(city => { %>
+                          <% city.position.forEach(position => { %>
+                              <option value="<%= position %>"><%= position %></option>
+                          <% }) %>
+                      <% }) %>
+                  </select>
+                  <button class="edit-button" type="button" onclick="editOption('position')">✏️</button>
+                  <button class="add-button" type="button" onclick="addOption('position')">+</button>
+              </div>
+
+              <label for="tin">ИИН:</label>
+              <input type="text" id="tin" name="tin" placeholder="Enter TIN">
+
+              <label for="fullname">ФИО:</label>
+              <input type="text" id="fullname" name="fullname" placeholder="Enter full name">
+
+              <label for="profilePic">Фото профиля:</label>
+              <input type="file" id="profilePic" name="profilePic" accept="image/*">
+              <div id="preview"></div>
+          </form>
+      </div>
+  </main>
+
+  <div class="leftside">
+      <header>
+          <div class="buttons">
+            <div class="d-grid mt-3">
+              <button type="button" id="save" class="btn btn-success rounded-3">Сохранить</button>
+          </div>
+          <div class="d-grid mt-3">
+              <button type="button" id="delete" class="btn btn-danger rounded-3">Удалить</button>
+          </div>
+              <button id="saveAndAdd">Сохранить и добавить другой объект</button>
+              <button id="saveAndEdit">Сохранить и продолжить редактирование</button>
+              <button id="history">История</button>
+          </div>
+      </header>
+  </div>
+
+
+  </div>
+
+  <script>
+    function toggleCities() {
+      const citiesList = document.getElementById('cities-list');
+      if (citiesList.style.display === 'none') {
+        citiesList.style.display = 'block';
+      } else {
+        citiesList.style.display = 'none';
+      }
+    }
+
+    function toggleOrganizations(city) {
+      const organizationsList = document.getElementById(city + '-organizations');
+      const arrow = document.getElementById(city + '-arrow');
+      if (organizationsList.style.display === 'none') {
+        organizationsList.style.display = 'block';
+        arrow.style.transform = 'rotate(90deg)';
+      } else {
+        organizationsList.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)';
+      }
+    }
+    const saveBtn = document.getElementById('save');
+    const deleteBtn = document.getElementById('delete');
+    const employeeForm = document.getElementById('employeeForm');
+
+    saveBtn.addEventListener('click', async () => {
+        const formData = new FormData(employeeForm);
+        const data = Object.fromEntries(formData.entries());
+        event.preventDefault();
+        try {
+            const response = await fetch('/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                Swal.fire({
+                    title: "Success!",
+                    text: "Data has been saved.",
+                    icon: "success"
+                });
+            } else {
+                Swal.fire({
+                    title: "Error!",
+                    text: result.error || "Failed to save data.",
+                    icon: "error"
+                });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                title: "Error!",
+                text: "Failed to save data.",
+                icon: "error"
+            });
+        }
+    });
+    employeeForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    
+    const formData = new FormData(employeeForm);
+
+    try {
+        const response = await fetch('/save', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            Swal.fire({
+                title: "Success!",
+                text: "Data has been saved.",
+                icon: "success"
+            });
+        } else {
+            Swal.fire({
+                title: "Error!",
+                text: result.error || "Failed to save data.",
+                icon: "error"
+            });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            title: "Error!",
+            text: "Failed to save data.",
+            icon: "error"
+        });
+    }
+});
+    deleteBtn.addEventListener('click', () => {
+      event.preventDefault();
+        employeeForm.reset();
+    });
+    function editOption(selectId) {
+      const select = document.getElementById(selectId);
+      if (select) {
+        const selectedValue = select.value;
+        const newValue = prompt('Edit the option:', selectedValue);
+        if (newValue !== null && newValue.trim() !== '') {
+          const selectedOption = select.querySelector(`option[value="${selectedValue}"]`);
+          if (selectedOption) {
+            selectedOption.value = newValue;
+            selectedOption.textContent = newValue;
+          }
+        }
+      }
+    }
+
+    function addOption(selectId) {
+      const select = document.getElementById(selectId);
+      if (select) {
+        const newValue = prompt('Enter the new option:');
+        if (newValue !== null && newValue.trim() !== '') {
+          const newOption = document.createElement('option');
+          newOption.value = newValue;
+          newOption.textContent = newValue;
+          select.appendChild(newOption);
+        }
+      }
+    }
+  </script>
+</body>
+</html>

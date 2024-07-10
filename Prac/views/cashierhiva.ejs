@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+
+    <title>Панель Кассира</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffff;
+            margin: 0;
+            padding: 0;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #f8f9fa;
+            color: #333;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .sidebar a {
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #333;
+            display: block;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background-color: #5787c6;
+        }
+        .cashiers-list {
+            margin-top: 20px;
+        }
+        .cashiers-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .cashiers-list ul li {
+            margin-bottom: 5px;
+        }
+        .dropdown {
+            display: none;
+            flex-direction: column;
+        }
+        .dropdown a {
+            padding-left: 30px;
+        }
+        .sidebar-section {
+            flex-grow: 1;
+        }
+        .sidebar-toggle {
+            cursor: pointer;
+        }
+        .container {
+            margin-left: 200px;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        .buttons button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .buttons button:hover {
+            background-color: #0056b3;
+        }
+        .payment-history {
+    max-width: 800px;
+    margin: auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    margin-top: 0;
+}
+
+.filters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.filter-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.filter-button:hover {
+    background-color: #0056b3;
+}
+
+.search {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.date-filter {
+    display: flex;
+    align-items: center;
+}
+
+.date-filter label {
+    margin-right: 5px;
+}
+
+.date-filter input {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background-color: #f1f1f1;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.download-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.download-button:hover {
+    background-color: #0056b3;
+}
+        .status-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .status-indicator div {
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .status-item {
+            display: flex;
+            flex-direction: column; /* Размещаем элементы в столбец */
+            align-items: center;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .status-item img {
+            cursor: pointer;
+            margin-bottom: 10px; /* Расстояние между изображением и текстом */
+            width: 50px; /* Устанавливаем ширину изображения */
+            height: 50px; /* Устанавливаем высоту изображения */
+        }
+        .logout {
+            margin-top: auto;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #fff;
+            display: block;
+            background-color: #333;
+        }
+        .logout:hover {
+            background-color: #575757;
+        }
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .form-container input, .form-container select, .form-container button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+/* QR code modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 600px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  padding: 20px;
+  text-align: center;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 24px;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  padding: 20px;
+  text-align: center;
+  border-top: 1px solid #e8e8e8;
+}
+
+.close-button {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* QR code container */
+#qr-code-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  margin: 20px auto;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#qr-code-canvas, #qr-code-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Ticket information */
+.ticket-container {
+  width: 300px;
+  margin: 20px auto;
+  border: 1px solid #ccc;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.ticket-info {
+  text-align: center;
+}
+
+.price-update-form {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.price-update-form input[type="number"], .price-update-form input[type="text"] {
+  width: 80%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.price-update-form button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.price-update-form button:hover {
+  background-color: #007bff;
+}
+
+.increment-decrement-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.increment-decrement-buttons button {
+  width: 30px;
+  height: 30px;
+  margin: 0 5px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.increment-decrement-buttons button:hover {
+  background-color: #45a049;
+}
+
+
+
+.button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.button:hover {
+    background-color: #0056b3;
+}
+/* Download buttons */
+.download-buttons {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.download-buttons a {
+  margin: 0 10px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.download-buttons a:hover {
+  background-color: #0056b3;
+}
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-section">
+            <h2 style="padding-left: 15px;">Admin</h2>
+            <div>
+                <a href="#" class="sidebar-toggle">Города</a>
+                <div class="dropdown" id="city-dropdown">
+                    <a href="#">Хива</a>
+                </div>
+            </div>
+        </div>
+        <a href="/logout" class="logout">Выйти</a>
+    </div>
+    <div class="container">
+        <div class="header">
+            <h1>Добро пожаловать!</h1>
+            <div class="ticket-container">
+                <div class="ticket-info">
+                    <h2>Hiva</h2>
+                    <p>Место проведения: Центр молодежи</p>
+                    <p>23.04.2024 • 14:00</p>
+                    <span id="ticket-price"></span>
+                    <p>- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - </p>
+                </div>
+                <div id="qr-code-container"  style="display: none;">
+                    <canvas id="qr-code-canvas"></canvas>
+                    <img id="qr-code-img" alt="QR Code" style="display: none;">
+                </div>
+                <div id="price-update-form" class="price-update-form" style="display: none;">
+                    <label for="num-tickets">Количество билетов:</label>
+                    <div class="increment-decrement-buttons">
+                        <button id="decrement-tickets">-</button>
+                        <input type="number" id="num-tickets" placeholder="Введите количество билетов" min="1" value="1">
+                        <button id="increment-tickets">+</button>
+                    </div>
+                    <label for="new-ticket-price">Цена за билет:</label>
+                    <input type="text" id="new-ticket-price" placeholder="Введите цену за билет">
+                    <p>Скидка: <span id="discount">0</span>%</p>
+                    <p>Комиссия: 0</p>
+                    <span id="ticket-price"></span>
+
+                    <button id="buyTickets" class="button">Купить</button>
+                </div>
+                <button id="generateQR" class="button">Сгенерировать QR</button>
+                <button id="updatePrice" class="button"> Форма оплаты</button>
+            </div>
+            
+        </div>
+        <div class="payment-history">
+            <h2>История оплаты</h2>
+            <div class="filters">
+                <h4>Все транзакции</h4>
+                <div class="date-filter">
+                    <label for="filter-date">Дата:</label>
+                    <input type="date" id="filter-date">
+                    <button class="filter-button" onclick="filterByDate()">Фильтр</button>
+                </div>
+            </div>
+            <table id="payment-table">
+                <thead>
+                    <tr>
+                        <th>Описание</th>
+                        <th>ID</th>
+                        <th>Номер карты</th>
+                        <th>Дата и время</th>
+                        <th>Сумма</th>
+                        <th>Чек</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Add more rows as needed -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+    const incrementButton = document.getElementById('increment-tickets');
+    const decrementButton = document.getElementById('decrement-tickets');
+    const numTicketsInput = document.getElementById('num-tickets');
+    const generateQRButton = document.getElementById('generateQR');
+    const updatePriceButton = document.getElementById('updatePrice');
+    const buyTicketsButton = document.getElementById('buyTickets');
+    const qrCodeContainer = document.getElementById('qr-code-container');
+    const priceUpdateForm = document.getElementById('price-update-form');
+    const ticketPrice = document.querySelector('.ticket-price');
+    const topTicketPrice = document.getElementById('top-ticket-price');
+    const newTicketPriceInput = document.getElementById('new-ticket-price');
+    const ticketPriceElement = document.getElementById('ticket-price');
+
+    let originalPrice = parseFloat(newTicketPriceInput.value.trim());
+    let paymentSystemEnabled = true;
+
+    // Define filterByDate function in global scope
+function filterByDate() {
+    const filterDate = document.getElementById('filter-date').value;
+    const table = document.getElementById('payment-table').getElementsByTagName('tbody')[0];
+    const rows = table.getElementsByTagName('tr');
+
+    for (let i = 0; i < rows.length; i++) {
+        const dateCell = rows[i].getElementsByTagName('td')[3];
+        const rowDate = dateCell.textContent.split('T')[0];
+
+        if (filterDate && filterDate !== rowDate) {
+            rows[i].style.display = 'none';
+        } else {
+            rows[i].style.display = '';
+        }
+    }
+}
+
+
+    function extractPrice(priceString) {
+        return parseFloat(priceString.replace(/[^\d.]/g, ''));
+    }
+
+    updatePriceButton.addEventListener('click', function () {
+        if (paymentSystemEnabled) {
+            priceUpdateForm.style.display = 'block';
+        } else {
+            alert('Система оплаты отключена');
+        }
+        const newPrice = parseFloat(newTicketPriceInput.value.trim());
+    const numTickets = parseInt(numTicketsInput.value);
+    updateTicketPrice(newPrice);
+        qrCodeContainer.style.display = 'none';
+        priceUpdateForm.style.display = 'block';
+        newTicketPriceInput.focus();
+        numTicketsInput.value = '1';
+    });
+
+    incrementButton.addEventListener('click', function () {
+        numTicketsInput.value = parseInt(numTicketsInput.value) + 1;
+    });
+
+    decrementButton.addEventListener('click', function () {
+        if (numTicketsInput.value > 1) {
+            numTicketsInput.value = parseInt(numTicketsInput.value) - 1;
+        }
+    });
+    function updateTicketPrice(price) {
+    const ticketPriceElement = document.querySelector('.ticket-price');
+    const currentPrice = parseFloat(ticketPriceElement.textContent.split(' ')[0]);
+    const discount = parseFloat(document.getElementById('discount').textContent);
+    ticketPriceElement.textContent = (currentPrice + price).toFixed(2) + " USD";
+}
+    function updateTicketPrice(newPrice) {
+
+        if (ticketPriceElement) {
+            ticketPriceElement.textContent = `${newPrice} USD`;
+        } else {
+            console.error('ticket-price element not found.');
+        }
+    }
+
+    if (updatePriceButton) {
+        updatePriceButton.addEventListener('click', () => {
+            // Example logic inside updatePriceButton click handler
+            const newTicketPriceInput = document.getElementById('new-ticket-price');
+            const numTicketsInput = document.getElementById('num-tickets');
+
+            // Example usage
+            const newPrice = parseFloat(newTicketPriceInput.value.trim());
+            const numTickets = parseInt(numTicketsInput.value);
+
+            // Call updateTicketPrice or other functions as needed
+            updateTicketPrice(newPrice);
+        });
+    }
+
+    // Event delegation for "Add Cashier"
+    document.querySelector('.sidebar-section').addEventListener('click', function (event) {
+        if (event.target.id === 'add-cashier-link') {
+            document.getElementById('form-container').style.display = 'block';
+        }
+    });
+
+    // Toggle dropdowns
+    document.querySelectorAll('.sidebar-toggle').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const dropdown = toggle.nextElementSibling;
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+    newTicketPriceInput.addEventListener('input', function () {
+        originalPrice = parseFloat(newTicketPriceInput.value.trim()); // Обновляем сохранённое значение исходной цены
+        if (ticketPriceElement) {
+            ticketPriceElement.textContent = `${originalPrice} USD`;
+        } else {
+            console.error('Элемент ticket-price не найден.');
+        }
+        
+    });
+    generateQRButton.addEventListener('click', function () {
+        if (generateQRButton.disabled) {
+            alert('Система оплаты отключена');
+            return;
+        }
+        if (numTicketsInput.value && newTicketPriceInput.value) {
+            qrCodeContainer.style.display = 'flex';
+            priceUpdateForm.style.display = 'none';
+            const totalPrice = numTicketsInput.value * newTicketPriceInput.value;
+            generateQRCode(totalPrice);
+        } else {
+            alert('Пожалуйста, заполните все поля перед генерацией QR кода.');
+        }
+    });
+    async function fetchPaymentHistory() {
+        try {
+            const response = await fetch('/get-payments');
+            const data = await response.json();
+            if (data.success) {
+                const paymentTableBody = document.getElementById('payment-table').querySelector('tbody');
+                paymentTableBody.innerHTML = ''; // Clear table before updating
+                data.payments.forEach(payment => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${payment.description}</td>
+                        <td>${payment.id}</td>
+                        <td>${payment.cardNumber}</td>
+                        <td>${payment.dateTime}</td>
+                        <td>${payment.amount}</td>
+                        <td>${payment.receipt}</td>
+                    `;
+                    paymentTableBody.appendChild(tr);
+                });
+            } else {
+                console.error('Ошибка при получении истории платежей:', data.message);
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки истории платежей:', error.message);
+        }
+    }
+    async function handleBuyTickets() {
+            const numTickets = parseInt(numTicketsInput.value);
+            const newPrice = parseFloat(newTicketPriceInput.value);
+            const discount = parseInt(document.getElementById('discount').textContent);
+            const finalPrice = newPrice - (newPrice * discount / 100);
+            const totalPrice = finalPrice * numTickets;
+
+            if (isNaN(numTickets) || numTickets <= 0 || newPrice < 0) {
+                alert('Пожалуйста, введите допустимое количество билетов и цену.');
+            } else {
+                const ticketPriceElement = document.getElementById('ticket-price');
+                if (ticketPriceElement) {
+                    ticketPriceElement.textContent = `${finalPrice.toFixed(2)} USD x ${numTickets} билетов = ${totalPrice.toFixed(2)} USD`;
+                } else {
+                    console.error('Элемент ticket-price не найден.');
+                }
+                if (discount === 100) {
+                    finalPrice = 0;
+                }
+                ticketPriceElement.textContent = `${finalPrice.toFixed(2)} USD x ${numTickets} билетов`;
+
+                // Update payment history on the server
+                const paymentData = {
+                    description: 'Покупка билета',
+                    cardNumber: `**** ${Math.floor(Math.random() * 9000) + 1000}`,
+                    amount: `+${totalPrice.toFixed(2)} USD`,
+                    dateTime: new Date().toISOString(),
+                    receipt: '<button class="download-button">Загрузить</button>'
+                };
+
+                try {
+                    const response = await fetch('/add-payment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(paymentData)
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('Платеж успешно добавлен в историю.');
+                        fetchPaymentHistory(); // Refresh payment history
+                    } else {
+                        console.error('Ошибка при добавлении платежа:', data.message);
+                    }
+                } catch (error) {
+                    console.error('Ошибка при добавлении платежа:', error.message);
+                }
+
+                qrCodeContainer.style.display = 'flex';
+                priceUpdateForm.style.display = 'none';
+                generateQRCode(`Price: ${finalPrice.toFixed(2)} USD x ${numTickets}`);
+            }
+        }
+
+        // Add the following lines to the `buyTicketsButton` click event handler
+        buyTicketsButton.addEventListener('click', handleBuyTickets);
+
+    buyTicketsButton.addEventListener('click', function () {
+        const numTickets = parseInt(numTicketsInput.value);
+        const newPrice = parseFloat(newTicketPriceInput.value);
+
+        const discount = parseInt(document.getElementById('discount').textContent);
+        let finalPrice = newPrice - (newPrice * discount / 100);
+        const totalPrice = finalPrice * numTickets;
+        if (isNaN(numTickets) || numTickets <= 0 || newPrice < 0) {
+            alert('Пожалуйста, введите допустимое количество билетов и цену.');
+        } else {
+            const ticketPriceElement = document.getElementById('ticket-price'); // Получаем элемент ticket-price
+            if (ticketPriceElement) {
+                ticketPriceElement.textContent = `${finalPrice.toFixed(2)} USD x ${numTickets} билетов = ${totalPrice.toFixed(2)} USD`;
+            } else {
+                console.error('Элемент ticket-price не найден.');
+            }
+            if (discount === 100) {
+                finalPrice = 0; // Если скидка 100%, финальная цена равна исходной
+            }
+            ticketPriceElement.textContent = `${finalPrice.toFixed(2)} USD x ${numTickets} билетов`;
+            
+            updateTicketPrice(totalPrice);
+            qrCodeContainer.style.display = 'flex';
+            priceUpdateForm.style.display = 'none';
+            generateQRCode(`Price: ${finalPrice.toFixed(2)} USD x ${numTickets}`);
+        }
+    });
+    function buyTicketsHandler() {
+    const numTickets = parseInt(numTicketsInput.value);
+    const newPrice = parseFloat(newTicketPriceInput.value);
+
+    const discount = parseInt(document.getElementById('discount').textContent);
+    const finalPrice = newPrice - (newPrice * discount / 100);
+    const totalPrice = finalPrice * numTickets; // Вычисляем общую сумму
+
+    if (isNaN(numTickets) || numTickets <= 0 || newPrice <= 0) {
+        alert('Пожалуйста, введите допустимое количество билетов и цену.');
+    } else {
+        ticketPriceElement.textContent = `${finalPrice.toFixed(2)} USD x ${numTickets} билетов = ${totalPrice.toFixed(2)} USD`; // Обновляем отображение цены билета
+        qrCodeContainer.style.display = 'flex';
+        priceUpdateForm.style.display = 'none';
+        generateQRCode(`Price: ${finalPrice.toFixed(2)} USD x ${numTickets}`); // Генерируем QR-код
+    }
+}
+
+
+    // Update UI based on user role
+    function updateUIForRole() {
+        const userRole = 'admin'; // Replace with actual logic to determine user role
+        const userCity = 'Самарканд'; // Replace with actual logic to determine user city
+
+        if (userRole === 'cashier') {
+            document.querySelector('.buttons').style.display = 'none';
+            document.querySelector('.sidebar h2').textContent = `Кассир (${userCity})`;
+            document.getElementById('generateQR').style.display = 'none';
+        }
+    }
+
+    // Load data when the page loads
+    window.onload = () => {
+        fetchCashiers();
+        fetchPaymentHistory();
+        updateUIForRole();
+    };
+
+    // Fetch list of cashiers from server
+    async function fetchCashiers() {
+        try {
+            const response = await fetch('/get-cashiers');
+            const data = await response.json();
+            if (data.success) {
+                const cashiersList = document.getElementById('cashier-dropdown');
+                cashiersList.innerHTML = ''; // Clear list before updating
+                data.cashiers.forEach(cashier => {
+                    const a = document.createElement('a');
+                    a.href = "#";
+                    a.textContent = cashier.username;
+                    cashiersList.appendChild(a); // Add cashier link to the list
+                });
+
+                // Add "Add Cashier" button
+                const addCashierLink = document.createElement('a');
+                addCashierLink.href = "#";
+                addCashierLink.id = "add-cashier-link";
+                addCashierLink.textContent = "Добавить";
+                cashiersList.appendChild(addCashierLink);
+            } else {
+                console.error('Ошибка при получении списка кассиров:', data.message);
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки списка кассиров:', error.message);
+        }
+    }
+
+    // Function to generate QR code
+    function generateQRCode(ticketPrice) {
+        // Data for QR code
+        const ticketData = {
+            event: 'Samarqand',
+            date: '23.04.2024',
+            time: '14:00',
+            price: ticketPrice
+        };
+
+        const qrCodeImg = document.getElementById('qr-code-img');
+
+        // Generate QR code using QRCode.js library
+        QRCode.toDataURL(JSON.stringify(ticketData))
+            .then(url => {
+                qrCodeImg.src = url;
+                qrCodeImg.style.display = 'inline';
+            })
+            .catch(err => console.error('Ошибка при генерации QR-кода:', err));
+    }
+
+    // Click event handler for "Generate QR" button
+    generateQRButton.addEventListener('click', () => {
+        const ticketPriceElement = document.querySelector('.ticket-price');
+        const ticketPrice = extractPrice(ticketPriceElement.textContent);
+        generateQRCode(ticketPrice);
+        qrCodeContainer.style.display = 'flex';
+    });
+    updateTicketPrice(originalPrice);
+    document.getElementById('add-cashier-form').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const username = document.getElementById('cashier-username').value;
+        const password = document.getElementById('cashier-password').value;
+        const city = document.getElementById('cashier-city').value;
+
+        try {
+            const response = await fetch('/add-cashier', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password, city })
+            });
+            const data = await response.json();
+            console.log('Response from server:', data);
+            if (data.success) {
+                alert('Кассир успешно добавлен!');
+                document.getElementById('form-container').style.display = 'none';
+                // Clear form fields
+                document.getElementById('cashier-username').value = '';
+                document.getElementById('cashier-password').value = '';
+                document.getElementById('cashier-city').value = '';
+                // Update cashiers list
+                fetchCashiers(); // Function to update cashiers list in the sidebar
+            } else {
+                alert('Ошибка добавления кассира: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Ошибка при добавлении кассира:', error.message);
+            alert('Ошибка при добавлении кассира. Пожалуйста, попробуйте позже.');
+        }
+    });
+
+    async function fetchCashiers() {
+        try {
+            const response = await fetch('/get-cashiers');
+            const data = await response.json();
+            if (data.success) {
+                const cashiersList = document.getElementById('cashier-dropdown');
+                cashiersList.innerHTML = ''; // Clear the list before updating
+                data.cashiers.forEach(cashier => {
+                    const a = document.createElement('a');
+                    a.href = "#";
+                    a.textContent = cashier.username;
+                    cashiersList.appendChild(a); // Add cashier link to the list
+                });
+
+                // Add "Add Cashier" button
+                const addCashierLink = document.createElement('a');
+                addCashierLink.href = "#";
+                addCashierLink.id = "add-cashier-link";
+                addCashierLink.textContent = "Добавить";
+                cashiersList.appendChild(addCashierLink);
+            } else {
+                console.error('Ошибка получения списка кассиров:', data.message);
+            }
+        } catch (error) {
+            console.error('Ошибка при загрузке кассиров:', error.message);
+        }
+    }
+
+    </script>
+</body>
+</html>

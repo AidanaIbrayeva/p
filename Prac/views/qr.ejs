@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator</title>
+  <style>
+    /* Add some basic styling */
+    .form-container {
+      max-width: 400px;
+      margin: 20px auto;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-container h2 {
+      text-align: center;
+    }
+
+    .form-container .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-container label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .form-container input,
+    .form-container button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .form-container button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .form-container button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div id="qr-generator">
+    <button onclick="generateQR()">Generate QR</button>
+    <div id="form-container" class="form-container"></div>
+  </div>
+
+  <script>
+    function generateQR() {
+      const formHtml = `
+        <div class="form-container">
+          <h2>Форма для оплаты</h2>
+          <div>
+            <h3>Samarqand</h3>
+            <p>Место проведения</p>
+            <p>23.04.2024 • 14:00</p>
+          </div>
+          <div>
+            <label for="quantity">Количество билетов</label>
+            <div>
+              <button type="button" onclick="changeQuantity(-1)">-</button>
+              <span id="quantity">1</span>
+              <button type="button" onclick="changeQuantity(1)">+</button>
+            </div>
+          </div>
+          <div>
+            <label for="amount">Сумма</label>
+            <input type="text" id="amount" placeholder="Введите сумму">
+          </div>
+          <div>
+            <p>Скидка --</p>
+            <p>Комиссия 0,00 USD</p>
+          </div>
+          <button type="button">Купить</button>
+        </div>
+      `;
+      document.getElementById('form-container').innerHTML = formHtml;
+    }
+
+    function changeQuantity(change) {
+      const quantityElement = document.getElementById('quantity');
+      let quantity = parseInt(quantityElement.innerText);
+      quantity = Math.max(1, quantity + change);
+      quantityElement.innerText = quantity;
+    }
+  </script>
+</body>
+</html>

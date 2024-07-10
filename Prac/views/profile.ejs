@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cities of Kazakhstan</title>
+  <script src="//cdn.webix.com/components/sidebar/sidebar.js"></script>
+  <link rel="stylesheet" href="//cdn.webix.com/components/sidebar/sidebar.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #555;
+    }
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    .sidebar {
+      background-color: #333;
+      color: #fff;
+      padding: 20px;
+      width: 220px;
+      position: fixed;
+      height: 100%;
+      overflow-y: auto;
+    }
+    .sidebar header {
+      margin-bottom: 20px;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar ul li {
+      margin-bottom: 10px;
+    }
+    .sidebar ul li h3 {
+      margin: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    .sidebar ul li h3 .arrow {
+      margin-left: auto;
+      transition: transform 0.3s;
+    }
+    .sidebar ul li ul {
+      list-style: none;
+      padding-left: 20px;
+      display: none;
+    }
+    .sidebar ul li ul li {
+      margin-bottom: 5px;
+    }
+    .sidebar .logout {
+      position: absolute;
+      bottom: 20px;
+      width: calc(100% - 40px);
+    }
+    .sidebar .logout img {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+    }
+    .sidebar .logout a {
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .header {
+      background-color: #e5eaef;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 20px;
+    }
+
+    .header img {
+      width: 30px;
+      height: 30px;
+      margin-right: 10px;
+    }
+
+    .header a {
+      color: #333;
+      text-decoration: none;
+    }
+
+    .header .buttons {
+      display: flex;
+    }
+
+    .header .buttons button {
+      background-color: transparent;
+      border: none;
+      color: #333;
+      cursor: pointer;
+      padding: 5px;
+      margin-left: 10px;
+    }
+
+    .header .buttons button:hover {
+      opacity: 0.8;
+    }
+
+    .header .buttons button i {
+      font-size: 1.2rem;
+    }
+
+    main {
+      flex-grow: 1;
+      padding: 20px;
+      margin-left: 240px;
+    }
+
+    .main-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #007bff;
+    }
+
+    form {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(252, 245, 245, 0.1);
+    }
+
+    form label {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    form input,
+    form select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      margin-bottom: 15px;
+    }
+
+    .select-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .select-container select {
+      width: calc(100% - 70px);
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .select-container .edit-button,
+    .select-container .add-button {
+      width: 30px;
+      height: 30px;
+      background-color: #e5eaef;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    .select-container .add-button {
+      background-color: #e5eaef;
+      color: green;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .buttons button {
+      width: 200px;
+      padding: 10px;
+      margin-bottom: 10px;
+      text-align: center;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .leftside header {
+      margin-left: auto;
+      margin-bottom: 8px;
+      padding: 70px;
+    }
+
+    img {
+      width: 30px;
+      height: 30px;
+    }
+
+    #searchInput {
+      width: 100%;
+      padding: 8px;
+      font-size: 16px;
+    }
+
+    #searchResults {
+      margin-top: 16px;
+    }
+
+    #searchResults div {
+      padding: 8px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    #searchResults h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header">
+      <div class="buttons">
+        <button class="profile" onclick="goToProfile()">
+          <a href="/profile"><img src="img/profile.png" alt="Profile"></a>
+        </button>
+        <button class="settings" onclick="goToSettings()">
+          <a href="/setting"><img src="img/settings.png" alt="Settings"></a>
+        </button>
+      </div>
+      <div class="search">
+        <input type="text" id="searchInput" placeholder="Search...">
+        <div id="searchResults"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="sidebar">
+      <header>
+        <h2>Cities of Kazakhstan</h2>
+      </header>
+      <nav>
+        <ul>
+          <% cities.forEach(city => { %>
+            <li>
+              <h3 onclick="toggleOrganizations('<%= city.name %>')">
+                <%= city.name %>
+                <i id="<%= city.name %>-arrow" class="arrow fas fa-chevron-right"></i>
+              </h3>
+              <% if (city.organizations && city.organizations.length > 0) { %>
+                <ul id="<%= city.name %>-organizations">
+                  <% city.organizations.forEach(organization => { %>
+                    <li><%= organization %></li>
+                  <% }) %>
+                </ul>
+              <% } else { %>
+                <p id="<%= city.name %>-organizations" style="display: none;">No organizations found for <%= city.name %>.</p>
+              <% } %>
+            </li>
+          <% }) %>
+        </ul>
+        <div class="logout">
+          <a href="/logout">
+            <img src="/img/logout.png" alt="Logout">Logout
+          </a>
+        </div>
+    </div>
+
+  </div>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    searchInput.addEventListener('input', (e) => {
+      const searchText = e.target.value;
+
+      if (searchText.trim() === '') {
+        searchResults.innerHTML = '';
+        return;
+      }
+
+      fetch(`/search?q=${searchText}`)
+        .then((response) => response.json())
+        .then((results) => {
+          searchResults.innerHTML = results.map((result) => `
+            <div>
+              <h3>${result.title}</h3>
+              <p>${result.description}</p>
+            </div>
+          `).join('');
+        });
+    });
+
+
+    const profilePicInput = document.getElementById('profilePic');
+    const preview = document.getElementById('preview');
+
+    profilePicInput.addEventListener('change', function () {
+      const file = this.files[0];
+
+      if (file) {
+        const reader = new FileReader();
+
+        reader.addEventListener('load', function () {
+          const imageUrl = this.result;
+          preview.innerHTML = `<img src="${imageUrl}" alt="Preview">`;
+        });
+
+        reader.readAsDataURL(file);
+      } else {
+        preview.innerHTML = '';
+      }
+    });
+
+    function goToProfile() {
+      window.location.href = '/profile';
+    }
+
+    function goToSettings() {
+      window.location.href = '/setting';
+    }
+
+    function toggleOrganizations(cityName) {
+      const organizations = document.getElementById(`${cityName}-organizations`);
+      const arrow = document.getElementById(`${cityName}-arrow`);
+      if (organizations.style.display === 'none' || organizations.style.display === '') {
+        organizations.style.display = 'block';
+        arrow.classList.remove('fa-chevron-right');
+        arrow.classList.add('fa-chevron-down');
+      } else {
+        organizations.style.display = 'none';
+        arrow.classList.remove('fa-chevron-down');
+        arrow.classList.add('fa-chevron-right');
+      }
+    }
+  </script>
+</body>
+</html>

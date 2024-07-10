@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+
+    <title>Панель Кассира</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffff;
+            margin: 0;
+            padding: 0;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #f8f9fa;
+            color: #333;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .sidebar a {
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #333;
+            display: block;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background-color: #5787c6;
+        }
+        .cashiers-list {
+            margin-top: 20px;
+        }
+        .cashiers-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .cashiers-list ul li {
+            margin-bottom: 5px;
+        }
+        .dropdown {
+            display: none;
+            flex-direction: column;
+        }
+        .dropdown a {
+            padding-left: 30px;
+        }
+        .sidebar-section {
+            flex-grow: 1;
+        }
+        .sidebar-toggle {
+            cursor: pointer;
+        }
+        .container {
+            margin-left: 200px;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        .buttons button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .buttons button:hover {
+            background-color: #0056b3;
+        }
+        .payment-history {
+    max-width: 800px;
+    margin: auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    margin-top: 0;
+}
+
+.filters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.filter-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.filter-button:hover {
+    background-color: #0056b3;
+}
+
+.search {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.date-filter {
+    display: flex;
+    align-items: center;
+}
+
+.date-filter label {
+    margin-right: 5px;
+}
+
+.date-filter input {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background-color: #f1f1f1;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.download-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.download-button:hover {
+    background-color: #0056b3;
+}
+        .status-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .status-indicator div {
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .status-item {
+            display: flex;
+            flex-direction: column; /* Размещаем элементы в столбец */
+            align-items: center;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .status-item img {
+            cursor: pointer;
+            margin-bottom: 10px; /* Расстояние между изображением и текстом */
+            width: 50px; /* Устанавливаем ширину изображения */
+            height: 50px; /* Устанавливаем высоту изображения */
+        }
+        .logout {
+            margin-top: auto;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #fff;
+            display: block;
+            background-color: #333;
+        }
+        .logout:hover {
+            background-color: #575757;
+        }
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .form-container input, .form-container select, .form-container button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+/* QR code modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 600px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  padding: 20px;
+  text-align: center;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 24px;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  padding: 20px;
+  text-align: center;
+  border-top: 1px solid #e8e8e8;
+}
+
+.close-button {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* QR code container */
+#qr-code-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  margin: 20px auto;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#qr-code-canvas, #qr-code-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Ticket information */
+.ticket-container {
+  width: 300px;
+  margin: 20px auto;
+  border: 1px solid #ccc;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.ticket-info {
+  text-align: center;
+}
+
+.price-update-form {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.price-update-form input[type="number"], .price-update-form input[type="text"] {
+  width: 80%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.price-update-form button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.price-update-form button:hover {
+  background-color: #007bff;
+}
+
+.increment-decrement-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.increment-decrement-buttons button {
+  width: 30px;
+  height: 30px;
+  margin: 0 5px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.increment-decrement-buttons button:hover {
+  background-color: #45a049;
+}
+
+
+
+.button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.button:hover {
+    background-color: #0056b3;
+}
+/* Download buttons */
+.download-buttons {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.download-buttons a {
+  margin: 0 10px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.download-buttons a:hover {
+  background-color: #0056b3;
+}
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-section">
+            <h2 style="padding-left: 15px;">Панель Кассира</h2>
+            <div>
+                <a href="#" class="sidebar-toggle">Города</a>
+                <div class="dropdown" id="city-dropdown">
+                    <a href="#">Бухара</a>
+                </div>
+            </div>
+        </div>
+        <a href="/logout" class="logout">Выйти</a>
+    </div>
+    <div class="container">
+        <div class="header">
+            <h1>Добро пожаловать!</h1>
+            <div class="ticket-container">
+                <div class="ticket-info">
+                    <h2 id="headerCity">Buhara</h2>
+                    <p>Место проведения: Центр молодежи</p>
+                    <p>23.04.2024 • 14:00</p>
+                    <span id="ticket-price"></span>
+                    <p>- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - </p>
+                </div>
+                <div id="qr-code-container" style="display: none;">
+                    <canvas id="qr-code-canvas"></canvas>
+                    <img id="qr-code-img" alt="QR Code" style="display: none;">
+                </div>
+                <div id="price-update-form" class="price-update-form" style="display: none;">
+                    <label for="num-tickets">Количество билетов:</label>
+                    <div class="increment-decrement-buttons">
+                        <button id="decrement-tickets">-</button>
+                        <input type="number" id="num-tickets" placeholder="Введите количество билетов" min="1" value="1">
+                        <button id="increment-tickets">+</button>
+                    </div>
+                    <label for="new-ticket-price">Цена за билет:</label>
+                    <input type="text" id="new-ticket-price" placeholder="Введите цену за билет">
+                    <p>Скидка: <span id="discount">0</span>%</p>
+                    <p>Комиссия: 0</p>
+                    <span id="ticket-price-value"></span>
+                    <button id="buy-tickets" class="button">Купить</button>
+                </div>
+                <button id="generate-qr" class="button">Сгенерировать QR</button>
+                <button id="update-price" class="button">Форма оплаты</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        async function toggleImage(img, type) {
+          const currentSrc = img.src;
+          const newState = currentSrc.includes('green') ? false : true;
+        
+          const update = {};
+          if (type === 'payment-system') {
+            update.paymentSystemEnabled = newState;
+          } else if (type === 'model') {
+            update.modelEnabled = newState;
+          } else if (type === 'test-period') {
+            update.testPeriodEnabled = newState;
+          }
+        
+          try {
+            const response = await fetch('/api/system-settings', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(update)
+            });
+            const settings = await response.json();
+        
+            // Update the image based on new settings
+            img.src = newState ? 'img/green.jpeg' : 'img/red.jpeg';
+        
+            // Update cashier interface (if applicable)
+            // You can broadcast changes via WebSocket or other real-time solutions if needed
+          } catch (err) {
+            console.error('Failed to update system settings:', err);
+          }
+        }
+        </script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const response = await fetch('/api/system-settings');
+        const settings = await response.json();
+    
+        // Set the initial state of the images based on settings
+        document.querySelector('.status-item img[alt="Green Circle"][onclick*="payment-system"]')
+          .src = settings.paymentSystemEnabled ? 'img/green.jpeg' : 'img/red.jpeg';
+        document.querySelector('.status-item img[alt="Red Circle"][onclick*="model"]')
+          .src = settings.modelEnabled ? 'img/green.jpeg' : 'img/red.jpeg';
+        document.querySelector('.status-item img[alt="Green Circle"][onclick*="test-period"]')
+          .src = settings.testPeriodEnabled ? 'img/green.jpeg' : 'img/red.jpeg';
+      } catch (err) {
+        console.error('Failed to fetch system settings:', err);
+      }
+    });
+    </script>
+            
+    <script>
+    const generateQRButton = document.getElementById('generate-qr');
+        const updatePriceButton = document.getElementById('update-price');
+        const buyTicketsButton = document.getElementById('buy-tickets');
+        const qrCodeContainer = document.getElementById('qr-code-container');
+        const priceUpdateForm = document.getElementById('price-update-form');
+        const numTicketsInput = document.getElementById('num-tickets');
+        const ticketPriceValue = document.getElementById('ticket-price-value');
+        const headerCity = document.getElementById('headerCity');
+
+        
+        async function fetchTicketPrice(city) {
+            try {
+                const response = await fetch(`/cashier/price/${city}`);
+                const data = await response.json();
+
+                if (data.success && data.price) {
+                    const originalPrice = parseFloat(data.price);
+                    ticketPriceValue.textContent = `${originalPrice.toFixed(2)} USD`;
+                } else {
+                    console.error('Ошибка при получении цены билета:', data.message || 'No price data received');
+                }
+            } catch (error) {
+                console.error('Ошибка при получении цены билета:', error.message);
+            }
+        }
+
+        async function init() {
+            await fetchTicketPrice(headerCity.textContent.trim()); // Инициализация с ценой для текущего города
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            generateQRButton.addEventListener('click', handleGenerateQR);
+            updatePriceButton.addEventListener('click', togglePriceUpdateForm);
+            buyTicketsButton.addEventListener('click', handleBuyTickets);
+        }
+
+        function handleGenerateQR() {
+            const numTickets = parseInt(numTicketsInput.value);
+            const currentPrice = parseFloat(ticketPriceValue.textContent.trim());
+
+            if (!isNaN(numTickets) && numTickets > 0 && !isNaN(currentPrice) && currentPrice >= 0) {
+                const totalPrice = (currentPrice * numTickets).toFixed(2);
+                generateQRCode(`Price: ${currentPrice.toFixed(2)} USD x ${numTickets}`);
+                qrCodeContainer.style.display = 'flex';
+                priceUpdateForm.style.display = 'none';
+            } else {
+                alert('Пожалуйста, заполните все поля перед генерацией QR кода.');
+            }
+        }
+
+        async function handleBuyTickets() {
+            const numTickets = parseInt(numTicketsInput.value);
+            const currentPrice = parseFloat(ticketPriceValue.textContent.trim());
+            const discount = parseInt(document.getElementById('discount').textContent);
+            const finalPrice = currentPrice - (currentPrice * discount / 100);
+
+            if (!isNaN(numTickets) && numTickets > 0 && !isNaN(currentPrice) && currentPrice >= 0) {
+                // Пример структуры данных платежа (настройте под свою реализацию на сервере)
+                const paymentData = {
+                    description: 'Покупка билетов',
+                    amount: `${(finalPrice * numTickets).toFixed(2)} USD`,
+                    dateTime: new Date().toISOString(),
+                    receipt: '<button class="download-button">Загрузить</button>'
+                };
+
+                try {
+                    const response = await fetch('/add-payment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(paymentData)
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('Платеж успешно добавлен в историю.');
+                        // Опционально обновить историю платежей или другие UI изменения
+                    } else {
+                        console.error('Ошибка при добавлении платежа:', data.message);
+                    }
+                } catch (error) {
+                    console.error('Ошибка при добавлении платежа:', error.message);
+                }
+
+                // Генерация QR кода
+                generateQRCode(`Price: ${finalPrice.toFixed(2)} USD x ${numTickets}`);
+                qrCodeContainer.style.display = 'flex';
+                priceUpdateForm.style.display = 'none';
+            } else {
+                alert('Пожалуйста, введите допустимое количество билетов и цену.');
+            }
+        }
+
+        function generateQRCode(ticketPrice) {
+            const ticketData = {
+                event: headerCity.textContent.trim(), // Пример названия события
+                date: '23.04.2024', // Пример даты события
+                time: '14:00', // Пример времени события
+                price: ticketPrice // Данные о цене для QR кода
+            };
+
+            const qrCodeImg = document.getElementById('qr-code-img');
+
+            QRCode.toDataURL(JSON.stringify(ticketData))
+                .then(url => {
+                    qrCodeImg.src = url;
+                    qrCodeImg.style.display = 'inline';
+                })
+                .catch(err => console.error('Ошибка при генерации QR-кода:', err));
+        }
+
+        function togglePriceUpdateForm() {
+            priceUpdateForm.style.display = priceUpdateForm.style.display === 'none' ? 'block' : 'none';
+            qrCodeContainer.style.display = 'none';
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
